@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace RecommendationApi.Recommendations
 {
@@ -24,7 +25,8 @@ namespace RecommendationApi.Recommendations
             public Double Percentage { get; set; }
             public string Title { get; set; }
 
-            public List<TraceEvents> EventIDs { get; set; }
+            public List<TraceEvents> EventIDs { get; set;  }
+
         }
 
         public class TraceEvents

@@ -48,27 +48,19 @@ namespace RecommendationApi.Recommendations
                 }
                 LogTraces.EventIDs = LstTraceEvents;
             }
-            catch (Exception)
+            catch (Exception e)
             {
-
-                // throw;
+                throw e;
             }
 
 
             return LogTraces;
         }
 
-        /// <summary>
-        /// this get the recommendation from external API for that graph with current simulation 
-        /// </summary>
-        /// <param name="graphId"></param>
-        /// <param name="userID"></param>
-        /// <param name="simulationID"></param>
-        /// <returns></returns>
+       
         public static Double GetPercentageInDouble(string percentage)
         {
             Double percentageDouble = 0;
-
             try
             {
                 percentage = percentage.Replace(",", ".");
@@ -76,19 +68,12 @@ namespace RecommendationApi.Recommendations
             }
             catch (Exception)
             {
-
                 percentageDouble = 0;
             }
             return percentageDouble;
         }
 
-        /// <summary>
-        /// this get the recommendation from external API for that graph with current simulation 
-        /// </summary>
-        /// <param name="graphId"></param>
-        /// <param name="userID"></param>
-        /// <param name="simulationID"></param>
-        /// <returns></returns>
+        
         public static string GetEventLabelFromLogTrace(List<LogTrace> lstScenarios, string eventID)
         {
             string label = string.Empty;
@@ -106,13 +91,7 @@ namespace RecommendationApi.Recommendations
 
         }
 
-        /// <summary>
-        /// this get the recommendation from external API for that graph with current simulation 
-        /// </summary>
-        /// <param name="graphId"></param>
-        /// <param name="userID"></param>
-        /// <param name="simulationID"></param>
-        /// <returns></returns>
+        
         public static string GetEventRoleFromLogTrace(List<LogTrace> lstScenarios, string eventID)
         {
             string role = string.Empty;

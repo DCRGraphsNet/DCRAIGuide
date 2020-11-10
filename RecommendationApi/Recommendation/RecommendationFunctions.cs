@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Xml;
 using static RecommendationApi.Recommendations.DTO;
 
 namespace RecommendationApi.Recommendations
@@ -9,10 +10,9 @@ namespace RecommendationApi.Recommendations
         /*returns list of recommendations for the next event, with the associated probability of that event being the next.*/
         public static List<Recommendation> GetRecommendations(string scenarios, string trace)
         {
-            List<Recommendation> lst = new List<Recommendation>();
             List<LogTrace> lstScenarios = XMLParser.GetLogTraces(scenarios);
             LogTrace lstsTrace = XMLParser.GetLogTrace(trace);
-            lst = Recommend(lstScenarios, lstsTrace);
+            List<Recommendation> lst = Recommend(lstScenarios, lstsTrace);
             return lst;
         }
 
@@ -51,38 +51,27 @@ namespace RecommendationApi.Recommendations
         }
 
         /*Returns list of the scenarios in lstScenarios that have eventIDs matching the eventIDs of the trace lstTrace*/
-        public static List<LogTrace> SelectScenariosForTrace(List<LogTrace> lstScenarios, LogTrace lstTrace)
+        public static List<LogTrace> SelectScenariosForTrace(List<LogTrace> scenarios, LogTrace trace)
         {
             List<LogTrace> matches = new List<LogTrace>();
-            string[] traceEventIDs = GetEventIDArray(lstTrace.EventIDs);
-
-            foreach (LogTrace itemSc in lstScenarios)
+            
+            foreach (LogTrace scenario in scenarios)
             {
-                string[] scenarioEventIDs = GetEventIDArray(itemSc.EventIDs);
-                bool isMatch = TraceEqual(traceEventIDs, scenarioEventIDs);
+                bool isMatch = trace.IsPrefixOf(scenario);
                 if (isMatch)
-                { //new LogTrace object constructed to avoid modifying data from original collection.
-                    LogTrace LogTrace = new LogTrace
-                    {
-                        SimulationID = itemSc.SimulationID,
-                        Percentage = itemSc.Percentage,
-                        Title = itemSc.Title,
-                        EventIDs = itemSc.EventIDs
-                    };
-                    matches.Add(LogTrace);
+                { 
+                    matches.Add(scenario);
                 }
-
             }
             return matches;
         }
 
         /*Function for updating the percentage of each match with their relative influence on the total amount.
          (Users assign percentages that aren't necessarily reflective and may exceed 100% total for all scenarios for a graph)*/
-        private static List<LogTrace> AdjustPercentage(List<LogTrace> lstmatches)
+        private static List<LogTrace> AdjustPercentage(List<LogTrace> matches)
         {
-            List<EventOccurence> lsteventOccurrence = new List<EventOccurence>();
             Double totalSumOfRemaining = 0;
-            foreach (LogTrace item in lstmatches)
+            foreach (LogTrace item in matches)
             {
                 //Adjust for scenarios that don't have a percentage estimate included to ensure they are included in calculation.
                 Double per = item.Percentage;
@@ -95,13 +84,53 @@ namespace RecommendationApi.Recommendations
 
             }
 
-            foreach (LogTrace item in lstmatches)
+            foreach (LogTrace item in matches)
             {
                 Double oldValue = item.Percentage;
                 Double newValue = AdjustPercentageValue(oldValue, totalSumOfRemaining);
                 item.Percentage = newValue;
             }
-            return lstmatches;
+            return matches;
+        }
+
+       
+
+        /*Given two arrays of eventIDs, picks the next event from the second array*/
+        public static string GetNextEvent(string[] str, string[] str2)
+        {
+            string nextEvent = null;
+            try
+            {
+                nextEvent = str2[str.Length];
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            return nextEvent;
+        }
+
+        
+
+        /*Adjusts the percentage of the total amount for a single logtrace*/
+        private static Double AdjustPercentageValue(Double oldValue, Double sumOfRemaining)
+        {
+            if (sumOfRemaining == 0)
+            {
+                return 0;
+            }
+
+            Double adjustedValue = (oldValue / sumOfRemaining) * 100;
+            return Math.Round(adjustedValue);
+
+        }
+
+        public static Boolean IsPrefixOf(this LogTrace lt, LogTrace t)
+        {
+            string[] traceEventIDs = GetEventIDArray(lt.EventIDs);
+            string[] scenarioEventIDs = GetEventIDArray(t.EventIDs);
+
+            return TraceEqual(traceEventIDs, scenarioEventIDs);
         }
 
         /*returns array of eventIDs for a given trace.*/
@@ -115,23 +144,6 @@ namespace RecommendationApi.Recommendations
             }
             return arr.ToArray();
 
-        }
-
-        /*Given two arrays of eventIDs, picks the next event from the second array*/
-        public static string GetNextEvent(string[] str, string[] str2)
-        {
-            //What is the criteria used for selecting the next event here? 
-            string nextEvent = null;
-            try
-            {
-                nextEvent = str2[str.Length];
-            }
-            catch (IndexOutOfRangeException e)
-            {
-                Console.WriteLine(e.Message); //TODO: Where to write this exception to?
-            }
-
-            return nextEvent;
         }
 
         /*Function for testing equality between two arrays of eventIDs.*/
@@ -149,20 +161,6 @@ namespace RecommendationApi.Recommendations
                 }
             }
             return true;
-        }
-
-        /*Adjusts the percentage of the total amount for a single logtrace*/
-        private static Double AdjustPercentageValue(Double oldValue, Double sumOfRemaining)
-        {
-            if (sumOfRemaining == 0)
-            {
-                return 0;
-            }
-
-            Double adjustedValue = 0;
-            adjustedValue = (oldValue / sumOfRemaining) * 100;
-            return Math.Round(adjustedValue);
-
         }
     }
 }

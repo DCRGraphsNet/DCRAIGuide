@@ -27,7 +27,6 @@ namespace RecommendationApi.Controllers
             }
             catch (Exception ex)
             {
-                
                 throw ex; 
             }
         }
