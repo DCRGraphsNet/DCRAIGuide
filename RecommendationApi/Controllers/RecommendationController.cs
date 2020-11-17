@@ -21,6 +21,8 @@ namespace RecommendationApi.Controllers
         {
             try
             {
+                var graphid = obj.GraphId;
+                Console.WriteLine(graphid);
                 var recommendationObj = RecommendationManager.Recommendation(obj.Scenarios, obj.Trace);
                 var output = JsonConvert.SerializeObject(recommendationObj);
                 return output;
@@ -29,6 +31,12 @@ namespace RecommendationApi.Controllers
             {
                 throw ex; 
             }
+        }
+
+        [Route("Get"), HttpGet]
+        public string GetGuideName()
+        {
+            return "DCRAIGuide v. 1.0";
         }
 
 

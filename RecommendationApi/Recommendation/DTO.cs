@@ -46,6 +46,8 @@ namespace RecommendationApi.Recommendations
         {
             public string Scenarios { get; set; }
             public string Trace { get; set; }
+
+            public string GraphId { get; set; }
         }
     }
 
